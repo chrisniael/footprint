@@ -1,0 +1,35 @@
+{
+    "center": {
+        "address": "郑州",
+        "city": "郑州",
+        "zoom": 5
+    },
+    "marks": [
+        {
+            "address": "上海",
+            "city": "上海",
+            "lati": 121.277102,
+            "longi": 31.059477,
+            "title": "Shanghai",
+            "desc": "I'm working here now."
+        },
+        {
+            "address": "南通",
+            "city": "南通",
+            "title": "Nantong",
+            "desc": "My hometown."
+        },
+        {
+            "address": "黑龙江大学",
+            "city": "哈尔滨",
+            "title": "Harbin",
+            "desc": "My college is here."
+        },
+        {
+            "address": "香港",
+            "city": "香港",
+            "title": "Hong Kong",
+            "desc": "Traveled here in 2014."
+        }
+    ]
+}

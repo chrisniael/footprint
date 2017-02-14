@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+    body, html,#allmap
+    {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        margin: 0;
+        font-family: "微软雅黑";
+    }
+    </style>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=你的密钥"></script>
+    <script src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
+    <title>Where I have been</title>
+</head>
+<body>
+    <div id="allmap"></div>
+</body>
+</html>
+<script type="text/javascript">
+
+$.getJSON("config.json", function(config) {
+        //console.log(config);
+        var center = config.center;
+        //console.log(center);
+        var marks = config.marks;
+        //console.log(marks);
+
+
+        var map = new BMap.Map("allmap", {enableMapClick:false});
+        var mapZoom = 5;
+        if(center.hasOwnProperty("zoom"))
+        {
+            mapZoom = center.zoom
+        }
+
+        if(center.hasOwnProperty("lati") && center.hasOwnProperty("longi"))
+        {
+            map.centerAndZoom(new BMap.Point(center.lati, center.longi), mapZoom);
+        }
+        else if(center.hasOwnProperty("address") && center.hasOwnProperty("city"))
+        {
+            var myGeo = new BMap.Geocoder();
+            myGeo.getPoint(center.address, function(point) {
+                if (point) {
+                    map.centerAndZoom(point, mapZoom);
+                    //map.addOverlay(new BMap.Marker(point));
+                } else {
+                    console.log("Center point error.");
+                }
+            }, center.city);
+        }
+        else
+        {
+        }
+
+        map.addControl(new BMap.NavigationControl({type:BMAP_NAVIGATION_CONTROL_ZOOM}));        // 添加平移缩放控件
+        map.addControl(new BMap.ScaleControl());             // 添加比例尺控件
+        map.enableScrollWheelZoom();                         //启用滚轮放大缩小
+        map.disable3DBuilding();
+
+        var styleJson = [
+        {
+            "featureType": "road",
+            "elementType": "all",
+            "stylers": {
+                "lightness": 20
+            }
+        },
+        {
+            "featureType": "highway",
+            "elementType": "all",
+            "stylers": {
+                "color": "#f49935",
+                "visibility": "off"
+            }
+        },
+        {
+            "featureType": "railway",
+            "elementType": "all",
+            "stylers": {
+                "visibility": "off"
+            }
+        },
+        {
+            "featureType": "local",
+            "elementType": "labels",
+            "stylers": {
+                "visibility": "off"
+            }
+        },
+        {
+            "featureType": "water",
+            "elementType": "all",
+            "stylers": {
+                "color": "#d1e5ff"
+            }
+        },
+        {
+            "featureType": "poi",
+            "elementType": "labels",
+            "stylers": {
+                "visibility": "off"
+            }
+        }
+    ];
+
+    map.setMapStyle({styleJson: styleJson});
+
+    var i = 0;
+    function addMarks() {
+        var mark = marks[i];
+        //console.log(i);
+        addMark(mark);
+
+        i++;
+        if(i < marks.length) {
+            setTimeout(addMarks, 400);
+        }
+    }
+
+    function addMark(mark) {
+        if(!mark)
+            return;
+
+        //console.log(mark);
+
+        var title = null;
+        var content = null;
+        if(mark.hasOwnProperty("title")) {
+            title = mark.title;
+        }
+        if(mark.hasOwnProperty("desc")) {
+            content = mark.desc;
+        }
+        //console.log(title);
+        //console.log(content);
+
+        if(mark.hasOwnProperty("lati") && mark.hasOwnProperty("longi"))
+        {
+            var point = new BMap.Point(mark.lati, mark.longi);
+            var marker = new BMap.Marker(point);
+            map.addOverlay(marker);
+            addClickHandler(title, content, marker);
+        }
+        else if(mark.hasOwnProperty("address") && mark.hasOwnProperty("city"))
+        {
+            var myGeo = new BMap.Geocoder();
+            myGeo.getPoint(mark.address, function(point) {
+                if (point) {
+                    var marker = new BMap.Marker(point);
+                    map.addOverlay(marker);
+                    addClickHandler(title, content, marker);
+                } else {
+                    console.log("[" + mark.address + "][" + mark.city + "]" + "getPoint fail.");
+                }
+            }, mark.city);
+        }
+        else
+        {
+            console.log(mark);
+        }
+    }
+
+    function addClickHandler(title, content, marker) {
+        marker.addEventListener("click", function(e) {
+                openInfo(title, content, e)
+                }
+            );
+    }
+
+    function openInfo(title, content, e) {
+        var p = e.target;
+        var point = new BMap.Point(p.getPosition().lng, p.getPosition().lat);
+        if(content) {
+            var infoWindow = new BMap.InfoWindow(content);
+            if(title) {
+                infoWindow.setTitle(title);
+            }
+            map.openInfoWindow(infoWindow, point);
+        }
+    }
+
+    addMarks();
+
+});
+</script>
