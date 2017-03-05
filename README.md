@@ -8,4 +8,4 @@
 
 ## 预览
 
-![previewer.png](previewer)
+![preview.png](preview)
